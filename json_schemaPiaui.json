@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "dados_processo": {
+      "type": "object",
+      "properties": {
+        "numero_processo": { "type": "string" },
+        "data_distribuicao": { "type": "string", "format": "date" },
+        "classe_judicial": { "type": "string" },
+        "assunto": { "type": "string" },
+        "jurisdicao": { "type": "string" },
+        "orgao_julgador": { "type": "string" }
+      },
+      "required": ["numero_processo", "data_distribuicao", "classe_judicial", "assunto", "jurisdicao", "orgao_julgador"]
+    },
+    "participantes": {
+      "type": "object",
+      "properties": {
+        "polo_ativo": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nome": { "type": "string" },
+              "situacao": { "type": "string" }
+            },
+            "required": ["nome", "situacao"]
+          }
+        },
+        "polo_passivo": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nome": { "type": "string" },
+              "situacao": { "type": "string" },
+              "representantes_legais": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "nome": { "type": "string" },
+                    "cpf": { "type": "string" },
+                    "oab": { "type": "string" }
+                  },
+                  "required": ["nome", "cpf", "oab"]
+                }
+              }
+            },
+            "required": ["nome", "situacao"]
+          }
+        }
+      },
+      "required": ["polo_ativo", "polo_passivo"]
+    },
+    "movimentacoes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "string", "format": "date-time" },
+          "movimento": { "type": "string" },
+          "documento": { "type": "string" }
+        },
+        "required": ["data", "movimento"]
+      }
+    },
+    "documentos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "data": { "type": "string", "format": "date-time" },
+          "tipo": { "type": "string" },
+          "descricao": { "type": "string" }
+        },
+        "required": ["data", "tipo"]
+      }
+    }
+  },
+  "required": ["dados_processo", "participantes", "movimentacoes", "documentos"]
+}
