@@ -1,7 +1,5 @@
 
 import re
-from http.client import responses
-
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -91,7 +89,7 @@ class Crawler:
         except Exception as e:
             print(f"Erro ao capturar o ViewState:{e}")
 
-    def requisicao_site(self):
+    def requisicao_site_base(self):
 
         try:
             res = self.session.post(self.url_consulta,headers=self.headers,data=self.data)
@@ -103,14 +101,21 @@ class Crawler:
         except Exception as e:
             print(f'Erro ao fazer a requisição POST:{e}')
 
-    def redirecionamento_pag(self,html):
-
+    def montar_link(self,html):
         pattern = r"openPopUp\('.*?','(/1.*?)'\)"
         match = re.search(pattern,html)
         if match:
             url_extraced = match.group(1)
-            print(url_extraced)
+            print("url construida:" + url_extraced)
             return self.url_base + url_extraced
         else:
             print("URL de redirecionamento não encontrada!")
         return None
+
+    def requisicao_detalhes_processo(self,link_montado):
+        try:
+            res = requests.get(link_montado)
+            html = BeautifulSoup(res.content, 'html.parser')
+            return html
+        except Exception as e:
+            print(f"Erro ao fazer Requisição do site com os{e}")
