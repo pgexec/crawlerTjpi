@@ -106,7 +106,6 @@ class Crawler:
         match = re.search(pattern,html)
         if match:
             url_extraced = match.group(1)
-            print("url construida:" + url_extraced)
             return self.url_base + url_extraced
         else:
             print("URL de redirecionamento não encontrada!")

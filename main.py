@@ -17,7 +17,7 @@ def main():
                 miner.extrair_polo_ativo()
                 miner.extrair_polo_passivo()
                 miner.extrair_movimentacoes_processo()
-                miner.extrair_documentos_juntados()
+                miner.extrair_url_documentos_juntados()
         else:
             print('Erro ao fazer Requisição ao site base!')
 
