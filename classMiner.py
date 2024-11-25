@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 class Miner:
     def __init__(self, site, schema_json_path):
+        self.site_base = "https://pje.tjpi.jus.br"
         self.site = site
         self.dados_processo = {}
         try:
@@ -56,7 +57,7 @@ class Miner:
             onclick_value = elemento['onclick']
             match = re.search(pattern, onclick_value)
             if match:
-                url = match.group(1)
+                url = self.site_base + match.group(1)
                 print("URL extraído:", url)
                 return url
         elif elemento and elemento.has_attr('href'):
