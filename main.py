@@ -13,7 +13,11 @@ def main():
             if link_montado is not None:
                 site_detalhes = crawler.requisicao_detalhes_processo(link_montado)
                 miner = Miner(site_detalhes,"json_schemaPiaui.json")
-                miner.extrair_dados_processo()
+                miner.montagem_dados_processo()
+                miner.extrair_polo_ativo()
+                miner.extrair_polo_passivo()
+                miner.extrair_movimentacoes_processo()
+                miner.extrair_documentos_juntados()
         else:
             print('Erro ao fazer Requisição ao site base!')
 
