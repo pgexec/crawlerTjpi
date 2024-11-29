@@ -5,6 +5,7 @@ from classMiner import Miner
 def main():
     numero_processo = "0000989-95.2017.8.18.0078"  # Exemplo de número de processo
 
+
     try:
 
         crawler = Crawler(numero_processo)
@@ -15,6 +16,7 @@ def main():
 
         link_montado = crawler.montar_link(site_base)
         print(link_montado)
+
         if not link_montado:
             print("Erro ao montar o link para os detalhes do processo.")
             return

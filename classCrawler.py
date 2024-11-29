@@ -1,6 +1,7 @@
 
 import re
-from functools import total_ordering
+import urllib
+
 
 import requests
 from bs4 import BeautifulSoup
@@ -17,6 +18,7 @@ class Crawler:
         self.url_consulta = "https://pje.tjpi.jus.br/1g/ConsultaPublica/listView.seam"
         self.url_base = "https://pje.tjpi.jus.br"
         self.url_post = "https://pje.tjpi.jus.br/1g/ConsultaPublica/DetalheProcessoConsultaPublica/listView.seam"
+        self.url_detalhes = ""
 
         self.headers = {
             "accept": "*/*",
@@ -35,7 +37,7 @@ class Crawler:
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
         }
         self.get_cookies()
-        self.get_viewstate()
+        self.get_viewstate(self.url_consulta)
 
         self.data = {
             "AJAXREQUEST": "_viewRoot",
@@ -64,7 +66,6 @@ class Crawler:
 
     def get_cookies(self):
         try:
-            # Faz a requisição inicial para capturar cookies
             response = self.session.get(self.url_consulta, headers=self.headers)
             if response.status_code == 200:
                 print("Cookies Capturados:", self.session.cookies.get_dict())
@@ -73,21 +74,21 @@ class Crawler:
         except Exception as e:
             print(f"Erro ao capturar cookies: {e}")
 
-    def get_viewstate(self):
+    def get_viewstate(self,url):
         try:
-            res = self.session.get(self.url_consulta, headers=self.headers)
+            res = self.session.get(url, headers=self.headers)
             if res.status_code == 200:
                 soup = BeautifulSoup(res.content, "html.parser")
-                view_state_tag = soup.find('input', attrs={'id': 'javax.faces.ViewState'}).get('value')
+                view_state_tag = soup.find('input', attrs={'id': 'javax.faces.ViewState'})
                 if view_state_tag:
-                    self.view_state = view_state_tag
-                    print('view_state localizado com sucesso!')
+                    self.view_state = view_state_tag.get('value')
+                    print(f"ViewState capturado: {self.view_state}")
                 else:
-                    print('Erro: ViewState não encontrado na página.')
+                    print("Erro: ViewState não encontrado na página inicial.")
             else:
-                print(f'Erro ao acessar a página:{res.status_code}')
+                print(f"Erro ao acessar a página inicial: {res.status_code}")
         except Exception as e:
-            print(f"Erro ao capturar o ViewState:{e}")
+            print(f"Erro ao capturar o ViewState: {e}")
 
     def requisicao_site_base(self):
 
@@ -102,19 +103,16 @@ class Crawler:
             print(f'Erro ao fazer a requisição POST:{e}')
 
 
-
     def montar_link(self, html):
         pattern = r"openPopUp\('.*?','(/1.*?)'\)"
         match = re.search(pattern, html)
         if match:
             url_extraced = match.group(1)
+            self.url_detalhes = self.url_base + url_extraced
             return self.url_base + url_extraced
         else:
             print("URL de redirecionamento não encontrada!")
         return None
-
-
-
 
     def requisicao_detalhes_processo(self, link_montado):
         try:
@@ -131,20 +129,27 @@ class Crawler:
 
         resultados = []
 
+        self.get_viewstate(self.url_detalhes)
         for pagina in range(1, total_paginas + 1):
             print(f"Requisitando página {pagina}...")
 
-            # Atualiza o número da página no payload
             payload = {
                 "AJAXREQUEST": "j_id140:j_id464",
                 "j_id140:j_id545:j_id546": str(pagina),
                 "j_id140:j_id545": "j_id140:j_id545",
                 "autoScroll": "",
-                "javax.faces.ViewState": self.view_state,  # ViewState fixo
+                "javax.faces.ViewState": self.view_state,
                 "j_id140:j_id545:j_id547": "j_id140:j_id545:j_id547",
                 "AJAX:EVENTS_COUNT": "1",
             }
-
+            cookies = {
+                "JSESSIONID": "6O7ZJS5SqtaK0-mJYQQKUVoNASabMWL2LZXH0aQn.pje-legacy-8458d97cb8-286qr",
+                "X-Oracle-BMC-LBS-Route": "7b2e2e97b2a075efc12d47b75af20ce22e335cdd27da03a11a2ff120e313e9b656c62fd8a7c42ae8fd5cdd7ad44d7171dd5413835fb58662d2c9bfa0",
+                "_ga": "GA1.1.1346687483.1732403223",
+                "_ga_NREPKDGLND": "GS1.1.1732403223.1.1.1732403238.45.0.0",
+                "_ga_Y465HJSLNG": "GS1.1.1732403223.1.1.1732403238.45.0.0"
+            }
+            self.session.cookies.update(cookies)
             headers = {
                 "accept": "*/*",
                 "accept-encoding": "gzip, deflate, br, zstd",
@@ -152,7 +157,6 @@ class Crawler:
                 "connection": "keep-alive",
                 "content-length": str(len(payload)),
                 "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                "cookie": "JSESSIONID=kN70Wv771oUoMQniB8ZiRIvka-TbcsfI4lz2eVYe.pje-legacy-8458d97cb8-rnfwj; X-Oracle-BMC-LBS-Route=84eb1219f25c7f0846913922b75a6937098eb18827da03a11a2ff120e313e9b656c62fd8a7c42ae83c9ff8270e88ee4455bb083221babffb8335dd2c; _ga=GA1.1.1346687483.1732403223; _ga_NREPKDGLND=GS1.1.1732403223.1.1.1732403238.45.0.0; _ga_Y465HJSLNG=GS1.1.1732403223.1.1.1732403238.45.0.0",
                 "host": "pje.tjpi.jus.br",
                 "origin": "https://pje.tjpi.jus.br",
                 "referer": "https://pje.tjpi.jus.br/1g/ConsultaPublica/DetalheProcessoConsultaPublica/listView.seam?ca=fcc12a4f2e8dbc1733d36839d40509854628d90d202db7c7",
@@ -163,6 +167,8 @@ class Crawler:
                 "sec-fetch-mode": "cors",
                 "sec-fetch-site": "same-origin",
                 "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+                "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+                "x-powered-by": "JSF/1.2",
             }
 
             try:
@@ -193,6 +199,7 @@ class Crawler:
         if not resultados:
             print("Nenhum dado encontrado durante a navegação entre páginas.")
         return resultados
+
 
 
 
