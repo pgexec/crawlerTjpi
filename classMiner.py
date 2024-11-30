@@ -13,6 +13,14 @@ class Miner:
         except Exception as e:
             self.json_schema = None
             print(f"Erro ao carregar o JSON Schema: {e}")
+    def havest(self):
+        try:
+            self.montagem_dados_processo()
+            self.extrair_polo_ativo()
+            self.extrair_polo_passivo()
+            self.extrair_movimentacoes_processo()
+        except Exception as e:
+            print(f'Erro ao extrair dados: {e}')
 
     def montagem_dados_processo(self):
 
@@ -87,6 +95,7 @@ class Miner:
             print(f'Erro ao extrair links dos documentos juntados {e}')
 
     def extrair_url_documentos(self,html_acumulado):
+
         resultados = []
         try:
             for html in html_acumulado:
