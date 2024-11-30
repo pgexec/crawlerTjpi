@@ -86,36 +86,21 @@ class Miner:
         except Exception as e:
             print(f'Erro ao extrair links dos documentos juntados {e}')
 
-    def extrair_url_documentos_juntados(self):
+    def extrair_url_documentos(self,html_acumulado):
+        resultados = []
         try:
-            documentos_juntados = []
-
-            tbody = self.site.find('tbody', attrs={"id": "j_id140:processoDocumentoGridTab:tb"})
-            if tbody:
-                linhas = tbody.find_all('tr')
+            for html in html_acumulado:
+                soup = BeautifulSoup(html, "html.parser")
+                linhas = soup.find_all("tr")
                 for linha in linhas:
-                    colunas = linha.find_all('td')
-                    if len(colunas) == 2:
-                        documento = {}
-
-                        # Coluna Esquerda (Documento)
-                        link_documento = colunas[0].find('a')
-                        if link_documento and link_documento.has_attr('id'):
-                            id_link_documento = link_documento['id']
-                            url_documento = self.extrair_link_doc(id_link_documento)
-                            if url_documento:
-                                documento['documento'] = url_documento
-
-                        # Coluna Direita (Certidão)
-                        link_coluna_direita = colunas[1].find('a')
-                        if link_coluna_direita and link_coluna_direita.has_attr('id'):
-                            id_link_direito = link_coluna_direita['id']
-                            url_direita = self.extrair_link_doc(id_link_direito)
-                            if url_direita:
-                                documento['certidao'] = url_direita
-                        if documento:
-                            documentos_juntados.append(documento)
-            self.dados_processo['documentos_juntados'] = documentos_juntados
-
+                    colunas = linha.find_all("td")
+                    if colunas:
+                        movimento = colunas[0].text.strip()
+                        documento = colunas[1].text.strip() if len(colunas) > 1 else None
+                        resultados.append({"movimento": movimento, "documento": documento})
+                    else:
+                        print(f"Nenhum dado encontrado na página {colunas}.")
+            json.dumps(resultados, indent=4, ensure_ascii=False)
+            return resultados
         except Exception as e:
             print(f"Erro ao extrair URLs de documentos juntados: {e}")

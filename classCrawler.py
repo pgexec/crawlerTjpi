@@ -1,4 +1,4 @@
-
+import json
 import re
 import urllib
 
@@ -122,17 +122,13 @@ class Crawler:
         except Exception as e:
             print(f"Erro ao fazer Requisição do site com os{e}")
 
-
-
-
     def requisicao_paginas(self, total_paginas):
 
-        resultados = []
+        html_acumulado = []
 
         self.get_viewstate(self.url_detalhes)
         for pagina in range(1, total_paginas + 1):
-            print(f"Requisitando página {pagina}...")
-
+            
             payload = {
                 "AJAXREQUEST": "j_id140:j_id464",
                 "j_id140:j_id545:j_id546": str(pagina),
@@ -172,7 +168,7 @@ class Crawler:
             }
 
             try:
-                # Faz a requisição POST
+
                 response = self.session.post(self.url_post, headers=headers, data=payload)
 
                 if response.status_code == 200:
@@ -181,13 +177,7 @@ class Crawler:
                     # Localiza a tabela com os dados
                     tbody = soup.find("tbody", {"id": "j_id140:processoEvento:tb"})
                     if tbody:
-                        linhas = tbody.find_all("tr")
-                        for linha in linhas:
-                            colunas = linha.find_all("td")
-                            if colunas:
-                                movimento = colunas[0].text.strip()
-                                documento = colunas[1].text.strip() if len(colunas) > 1 else None
-                                resultados.append({"movimento": movimento, "documento": documento})
+                        html_acumulado.append(str(tbody))
                     else:
                         print(f"Nenhum dado encontrado na página {pagina}.")
                 else:
@@ -196,9 +186,14 @@ class Crawler:
             except Exception as e:
                 print(f"Erro ao processar a página {pagina}: {e}")
 
-        if not resultados:
-            print("Nenhum dado encontrado durante a navegação entre páginas.")
-        return resultados
+        if not html_acumulado:
+            print("Nenhum HTML de tabela encontrado durante a navegação entre páginas.")
+        else:
+            print(f"HTML de {len(html_acumulado)} tabelas acumulado(s).")
+
+
+        return html_acumulado
+
 
 
 

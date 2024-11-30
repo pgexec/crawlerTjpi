@@ -35,13 +35,12 @@ def main():
 
 
         miner = Miner(site_detalhes, "json_schemaPiaui.json")
-
         # Executa a extração de informações com o Miner
         miner.montagem_dados_processo()
         miner.extrair_polo_ativo()
         miner.extrair_polo_passivo()
         miner.extrair_movimentacoes_processo()
-        miner.extrair_url_documentos_juntados()
+        miner.extrair_url_documentos(resultados)
 
     except Exception as e:
         print(f"Erro durante a execução: {e}")
