@@ -1,3 +1,5 @@
+import json
+
 from classCrawler import Crawler
 from classMiner import Miner
 
@@ -32,8 +34,8 @@ def main():
             print(f"Dados coletados: {resultados}")
 
         miner = Miner(site_detalhes, "json_schemaPiaui.json")
-        miner.extrair_url_documentos(resultados)
-
+        tabela_montada = miner.extrair_url_documentos(resultados)
+        print(json.dumps(tabela_montada, indent=4, ensure_ascii=False))
     except Exception as e:
         print(f"Erro durante a execução: {e}")
 

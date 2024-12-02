@@ -105,11 +105,22 @@ class Miner:
                     colunas = linha.find_all("td")
                     if colunas:
                         movimento = colunas[0].text.strip()
-                        documento = colunas[1].text.strip() if len(colunas) > 1 else None
+                        documento = None
+
+                        if len(colunas) > 1 and colunas[1].find("a"):
+                            tag_a = colunas[1].find("a")  # Pega a tag <a>
+                            if tag_a.has_attr("onclick"):
+
+                                match = re.search(r"openPopUp\('PopUpDocumentoBin',\s*'([^']*)'", tag_a["onclick"])
+                                if match:
+                                    documento = match.group(1)
+                                    #terminar manipulação do link do DOC
+
                         resultados.append({"movimento": movimento, "documento": documento})
                     else:
-                        print(f"Nenhum dado encontrado na página {colunas}.")
-            json.dumps(resultados, indent=4, ensure_ascii=False)
+                        print(f"Nenhum dado encontrado na linha: {linha}")
+
             return resultados
         except Exception as e:
             print(f"Erro ao extrair URLs de documentos juntados: {e}")
+            return []
